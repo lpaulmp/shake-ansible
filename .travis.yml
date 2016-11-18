@@ -1,0 +1,34 @@
+language: c
+
+sudo: false
+
+# GHC depends on GMP. You can add other dependencies here as well.
+addons:
+  apt:
+    packages:
+    - libgmp-dev
+
+cache:
+  directories:
+    - $HOME/.stack
+
+matrix:
+  include:
+  - env: ARGS="--resolver lts-7.9"
+    compiler: ": # lts-7 gch-8.0.1"
+  - env: ARGS="--resolver lts"
+    compiler: ": # lts"
+
+before_install:
+# Using compiler above sets CC to an invalid value, so unset it
+- unset CC
+
+# Download and unpack the stack executable
+- mkdir -p ~/.local/bin
+- export PATH=$HOME/.local/bin:$PATH
+- curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+
+# This line does all of the work: installs GHC if necessary, build the library,
+# executables, and test suites, and runs the test suites. --no-terminal works
+# around some quirks in Travis's terminal implementation.
+script: stack $ARGS --no-terminal --install-ghc test --haddock --no-haddock-deps
